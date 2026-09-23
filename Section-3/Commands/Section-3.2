@@ -1,0 +1,10 @@
+docker exec namenode hdfs dfs -ls -h /shopsphere/raw/sales
+docker exec namenode hdfs dfs -tail /shopsphere/raw/sales/shopsphere_black_friday.csv
+docker exec namenode hdfs dfs -du -h /shopsphere 
+docker exec namenode hdfs dfs -get /shopsphere/raw/sales/shopsphere_black_friday.csv /tmp/exported_sales.csv 
+docker cp namenode:/tmp/exported_sales.csv ./exported_sales.csv 
+docker exec namenode hdfs dfs -mkdir -p /shopsphere/temp_stage 
+docker exec namenode hdfs dfs -cp /shopsphere/raw/sales/shopsphere_black_friday.csv /shopsphere/temp_stage/test_data.csv 
+hdfs dfs -ls /shopsphere/temp_stage 
+docker exec namenode hdfs dfs -rm -skipTrash /shopsphere/temp_stage/test_data.csv 
+docker exec namenode hdfs dfs -rmdir /shopsphere/temp_stage 
