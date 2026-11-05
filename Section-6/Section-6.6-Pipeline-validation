@@ -1,0 +1,48 @@
+# ==============================================================================
+# PREREQUISITE TERMINAL COMMANDS (Run before launching PySpark)
+# ==============================================================================
+# 1. Verify HDFS partitions:
+# ~/hadoop/bin/hdfs dfs -ls /capstone_project/processed_data/ecommerce_parquet/
+#
+# 2. Install visualization libraries:
+# pip install matplotlib pandas
+#
+# 3. Launch interactive PySpark shell:
+# pyspark --master yarn
+# ==============================================================================
+
+# STEP 3: INTERACTIVE QUERYING IN PYSPARK SHELL
+# (Note: In the PySpark shell, the 'spark' session is already initialized)
+
+# Load the processed Gold-tier Parquet data from HDFS into memory
+df_gold = spark.read.parquet("hdfs://localhost:9000/capstone_project/processed_data/ecommerce_parquet")
+
+# Expose the dataframe to the Spark SQL engine as a temporary view
+df_gold.createOrReplaceTempView("gold_ecommerce")
+
+
+# STEP 4: PARTITION PRUNING & VISUAL OUTPUT
+# Execute the query leveraging Partition Pruning on 'event_date'
+analytics_query = spark.sql("""SELECT category_code, ROUND(SUM(price), 2) AS total_revenue FROM gold_ecommerce WHERE event_type = 'purchase' AND event_date = '2019-10-02' AND category_code IS NOT NULL GROUP BY category_code ORDER BY total_revenue DESC LIMIT 5 """)
+
+# Import pandas (fixing the classic developer NameError simulated in the demo)
+import pandas as pd
+
+# Convert the distributed Spark output into a local Pandas DataFrame
+pdf = pd.DataFrame(analytics_query.collect(), columns=['category_code', 'total_revenue'])
+
+# Import Matplotlib to build the visual report
+import matplotlib.pyplot as plt
+
+# Build the bar chart
+plt.figure(figsize=(10, 6))
+plt.bar(pdf['category_code'], pdf['total_revenue'], color='skyblue')
+plt.title('Top 5 Product Categories by Revenue (Oct 2, 2019)')
+plt.xlabel('Category')
+plt.ylabel('Total Revenue ($)')
+plt.xticks(rotation=45)
+plt.tight_layout()
+
+# Save the plot directly to the Ubuntu server
+plt.savefig("/home/ubuntu/capstone_project/top_categories.png")
+print("Success! Chart saved to your Capstone Project folder.")
