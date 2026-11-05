@@ -1,0 +1,18 @@
+# Section 6.5: Automation via Linux Cron & spark-submit
+
+### Step 1: Manual Execution & The Deployment Command
+ # Activate the virtual environment:
+```bash
+source capstone_env/bin/activate
+spark-submit --master yarn /home/ubuntu/capstone_project/shopsphere_etl.py
+
+### Step 3: Scheduling with Linux Cron
+# Open the cron table editor (press 1 if prompted to select the nano editor):
+
+```bash
+crontab -e
+
+# Paste the following scheduling rule at the absolute bottom of the file to automate the ETL pipeline at 2:00 AM daily:
+
+```bash
+0 2 * * * /home/ubuntu/spark/bin/spark-submit --master yarn /home/ubuntu/capstone_project/shopsphere_etl.py >> /home/ubuntu/capstone_project/shopsphere_etl.log 2>&1
